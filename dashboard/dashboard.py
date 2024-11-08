@@ -1,143 +1,72 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import streamlit as st
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-sns.set(style='dark')
+# Load Data
+@st.cache
+def load_data():
+    day_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/day.csv")
+    hour_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/hour.csv")
 
-def create_weather_workday_df(df, isWorkdaybyInt):
-    weather_workday_df = df[df["workingday"] == isWorkdaybyInt].groupby(["weathersit"]).cnt.sum().sort_values(ascending=False).reset_index()
-    # karena tidak ada cuaca 4 maka akan kita tambahkan cuaca 4 dengan cnt bernilai 0.
-    if not (weather_workday_df['weathersit'] == 4).any():
-        new_row = pd.DataFrame({"weathersit": [4], "cnt": [0]})
-        weather_workday_df = pd.concat([weather_workday_df, new_row], ignore_index=True)
-
-    weather_workday_df.rename(columns={
-        "weathersit": "weather_index",
-        "cnt": "users_count"
-    }, inplace=True)
+    # Clean Data
+    day_df["dteday"] = pd.to_datetime(day_df["dteday"])
+    hour_df["dteday"] = pd.to_datetime(hour_df["dteday"])
     
-    return weather_workday_df
+    return day_df, hour_df
 
-def create_byHourGroup_df(df):
-    df["hr_group"] = df.hr.apply(
-        lambda x: "Dini Hari" if x>=0 and x<6 
-        else ("Pagi" if x>=6 and x<11 
-              else ("Siang" if x>=11 and x<15 
-                    else "Sore" if x>=15 and x<18 else "Malam")
-        )
-    )
+day_df, hour_df = load_data()
 
+# Sidebar with Logo
+st.sidebar.image('https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/dashboard/bikes-sharing.png', use_column_width=True) 
+st.sidebar.header('Bike Sharing Data Analysis')
+st.sidebar.text('Select your analysis options below:')
 
-    byHourGroup_df = df.groupby(by="hr_group").cnt.sum().reset_index()
-    byHourGroup_df.rename(columns={
-        "hr_group": "hour_group",
-        "cnt": "users_count"
-    }, inplace=True)
-    
-    return byHourGroup_df
+# Select options
+analysis_option = st.sidebar.selectbox('Choose Analysis', ['Overview', 'Weather vs Usage', 'Time vs Usage'])
 
+# Header with Logo
+st.image('https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/dashboard/bikes-sharing.png', use_column_width=True) 
 
-day_df = pd.read_csv(r'https://raw.githubusercontent.com/KawaiSeigiDesu/Belajar-Analisis-Data-dengan-Python/refs/heads/main/data/day.csv')
-hour_df = pd.read_csv(r'https://raw.githubusercontent.com/KawaiSeigiDesu/Belajar-Analisis-Data-dengan-Python/refs/heads/main/data/hour.csv')
+# Overview
+if analysis_option == 'Overview':
+    st.title('Bike Sharing Data Overview')
+    st.write('Here is a general overview of the bike sharing data:')
+    st.write("### Day Data")
+    st.dataframe(day_df.head())
+    st.write("### Hour Data")
+    st.dataframe(hour_df.head())
 
-column = "dteday"
-day_df.sort_values(by=column, inplace=True)
-day_df.reset_index(inplace=True)
-hour_df.sort_values(by=column, inplace=True)
-hour_df.reset_index(inplace=True)
+# Weather vs Usage
+elif analysis_option == 'Weather vs Usage':
+    st.title('Weather Impact on Bike Usage')
+    weather_df = day_df.groupby('weathersit').agg({'cnt': 'sum'}).reset_index()
+    st.write(weather_df)
 
-day_df[column] = pd.to_datetime(day_df[column])
-hour_df[column] = pd.to_datetime(day_df[column])
-
-
-min_date = day_df[column].min()
-max_date = day_df[column].max()
- 
-with st.sidebar:
-    # Menambahkan logo perusahaan
-    st.image("https://raw.githubusercontent.com/KawaiSeigiDesu/Belajar-Analisis-Data-dengan-Python/db8229b9710c7217ca10bc75db15ab52efa977f7/dashboard/bike-sharing-image.png")
-    
-    # Mengambil start_date & end_date dari date_input
-    start_date, end_date = st.date_input(
-        label='Time Span',min_value=min_date,
-        max_value=max_date,
-        value=[min_date, max_date]
-    )
-
-main_df = day_df[(day_df[column] >= str(start_date)) & 
-                (day_df[column] <= str(end_date))]
-second_df = hour_df[(hour_df[column] >= str(start_date)) & 
-                (hour_df[column] <= str(end_date))]
-
-weather_NOTworkday_df = create_weather_workday_df(main_df, 0)
-weather_workday_df = create_weather_workday_df(main_df, 1)
-byHourGroup_df = create_byHourGroup_df(second_df)
-
-########################
-st.header('Dicoding Bike Sharing Dashboard :sparkles:')
-
-st.subheader("Workdays")
- 
-col1, col2 = st.columns(2)
- 
-with col1:
     fig, ax = plt.subplots()
-    labels_detail = [
-        'Clear or Partly cloudy', 
-        'Mist and/or Cloudy', 
-        'Light Rain and/or Thunderstorm or Light Snow', 
-        'Heavy Rain or Snow and Fog'
-    ]
-    size = weather_workday_df["users_count"]
-    pie = plt.pie(size, startangle=0)
-    title = plt.title("Jumlah Total Pengguna di Tiap Cuaca\nPada Hari Bekerja (2011-2012)", fontsize=20)
-    title.set_ha("center")
-    plt.legend(
-        pie[0], 
-        labels_detail, 
-        bbox_to_anchor=(0.65,-0.05), 
-        loc="lower right", 
-        bbox_transform=plt.gcf().transFigure
-    )
+    sns.barplot(x='weathersit', y='cnt', data=weather_df, ax=ax)
+    ax.set_title('Weather Condition vs Total Bike Usage')
+    ax.set_xlabel('Weather Condition')
+    ax.set_ylabel('Total Usage')
     st.pyplot(fig)
- 
-with col2:
-    fig, ax = plt.subplots()
-    labels_detail = [
-        'Clear or Partly cloudy', 
-        'Mist and/or Cloudy', 
-        'Light Rain and/or Thunderstorm or Light Snow', 
-        'Heavy Rain or Snow and Fog'
-    ]
-    size = weather_NOTworkday_df["users_count"]
-    pie = plt.pie(size, startangle=0)
-    title = plt.title("Jumlah Total Pengguna di Tiap Cuaca\nPada Hari Libur (2011-2012)", fontsize=20)
-    title.set_ha("center")
-    plt.legend(
-        pie[0], 
-        labels_detail, 
-        bbox_to_anchor=(0.65,-0.05), 
-        loc="lower right", 
-        bbox_transform=plt.gcf().transFigure
-    )
-    st.pyplot(fig)
-########################
 
-########################
-st.subheader("Time of Day")
- 
-fig = plt.figure(figsize=(10, 5))
- 
-sns.barplot(
-    y="users_count", 
-    x="hour_group",
-    hue="hour_group",
-    data=byHourGroup_df.sort_values(by="users_count", ascending=False),
-    legend=False
-)
-plt.title("Jumlah Total Pengguna di Tiap Kelompok Jam", loc="center", fontsize=15)
-plt.ylabel(None)
-plt.xlabel(None)
-plt.tick_params(axis='x', labelsize=12)
-st.pyplot(fig)
+# Time vs Usage
+elif analysis_option == 'Time vs Usage':
+    st.title('Time of Day Impact on Bike Usage')
+    
+    hour_df["hr_group"] = hour_df['hr'].apply(lambda x: "Early Morning" if x < 6 else ("Morning" if x < 11 else ("Afternoon" if x < 15 else ("Evening" if x < 18 else "Night"))))
+    
+    time_df = hour_df.groupby('hr_group').agg({'cnt': 'sum'}).reset_index()
+    
+    st.write(time_df)
+    
+    fig, ax = plt.subplots()
+    sns.barplot(x='hr_group', y='cnt', data=time_df, ax=ax)
+    ax.set_title('Time of Day vs Total Bike Usage')
+    ax.set_xlabel('Time of Day')
+    ax.set_ylabel('Total Usage')
+    st.pyplot(fig)
+
+# Footer
+st.sidebar.text('Created by: Bagus Angkasawan Sumantri Putra')
