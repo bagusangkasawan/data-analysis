@@ -1,87 +1,104 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Load Data
-@st.cache_data
-def load_data():
-    day_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/day.csv")
-    hour_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/hour.csv")
+# Load data
+day_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/day.csv")
+hour_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/hour.csv")
 
-    # Clean Data
-    day_df["dteday"] = pd.to_datetime(day_df["dteday"])
-    hour_df["dteday"] = pd.to_datetime(hour_df["dteday"])
+# Data preprocessing
+day_df['dteday'] = pd.to_datetime(day_df['dteday'])
+hour_df['dteday'] = pd.to_datetime(hour_df['dteday'])
+hour_df['weekday'] = hour_df['dteday'].dt.dayofweek
+
+# Set up Streamlit app
+st.set_page_config(
+    page_title="Bike Sharing Analysis Dashboard",
+    page_icon="bikes-sharing.png",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+st.title('Bike Sharing Analysis Dashboard')
+
+# Sidebar for user input
+analysis_type = st.sidebar.selectbox("Pilih Jenis Analisis", ["Efek Cuaca", "Pola Penggunaan", "Clustering"])
+
+# Define each tab's content
+if analysis_type == "Efek Cuaca":
+    st.header("Pengaruh Cuaca pada Penggunaan Sepeda")
+    day_type = st.radio("Pilih Hari", ("Hari Kerja", "Hari Libur"))
     
-    return day_df, hour_df
+    if day_type == "Hari Kerja":
+        weather_workday_df = day_df[day_df["workingday"] == 1].groupby(["weathersit"]).cnt.sum().reset_index()
+        sns.barplot(x="weathersit", y="cnt", data=weather_workday_df)
+        plt.xlabel("Cuaca")
+        plt.ylabel("Jumlah Pengguna")
+        plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Kerja)")
+        st.pyplot(plt)
+    else:
+        weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weathersit"]).cnt.sum().reset_index()
+        sns.barplot(x="weathersit", y="cnt", data=weather_holiday_df)
+        plt.xlabel("Cuaca")
+        plt.ylabel("Jumlah Pengguna")
+        plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Libur)")
+        st.pyplot(plt)
 
-day_df, hour_df = load_data()
+elif analysis_type == "Pola Penggunaan":
+    st.header("Pola Penggunaan Sepeda")
+    st.subheader("Pola Penggunaan Sepanjang Minggu")
 
-# Sidebar with Logo
-st.sidebar.image('https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/dashboard/bikes-sharing.png', use_column_width=True) 
-st.sidebar.header('Bike Sharing Data Analysis')
-st.sidebar.text('Select your analysis options below:')
+    weekday = st.selectbox("Pilih Hari dalam Minggu", ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"])
+    weekday_index = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"].index(weekday)
+    usage_by_day = hour_df[hour_df["weekday"] == weekday_index].groupby(["hr"]).cnt.sum().reset_index()
 
-# Select options
-analysis_option = st.sidebar.selectbox('Choose Analysis', ['Overview', 'Weather vs Usage', 'Time vs Usage'])
+    plt.figure(figsize=(10, 5))
+    sns.lineplot(x="hr", y="cnt", data=usage_by_day)
+    plt.xlabel("Jam")
+    plt.ylabel("Jumlah Pengguna")
+    plt.title(f"Pola Penggunaan Sepeda pada {weekday}")
+    st.pyplot(plt)
 
-# Header with Logo
-st.image('https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/dashboard/bikes-sharing.png', use_column_width=True) 
-
-# Overview
-if analysis_option == 'Overview':
-    st.title('Bike Sharing Data Overview')
-    st.write('Here is a general overview of the bike sharing data:')
-    st.write("### Day Data")
+    st.subheader("Pola Penggunaan Sepanjang Jam")
+    usage_by_time_df = hour_df.groupby(["weekday", "hr"]).cnt.sum().unstack()
     
-    sort_by_day = st.selectbox('Sort Day Data By', day_df.columns.tolist())
-    st.dataframe(day_df.sort_values(by=sort_by_day).head())
-    
-    st.write("### Hour Data")
-    
-    sort_by_hour = st.selectbox('Sort Hour Data By', hour_df.columns.tolist())
-    st.dataframe(hour_df.sort_values(by=sort_by_hour).head())
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(usage_by_time_df, cmap="YlGnBu", cbar_kws={'label': 'Total Pengguna Sepeda'})
+    plt.xlabel("Jam")
+    plt.ylabel("Hari dalam Minggu")
+    plt.title("Pola Penggunaan Sepeda Sepanjang Minggu dan Jam")
+    plt.yticks(ticks=[0, 1, 2, 3, 4, 5, 6], labels=["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"], rotation=0)
+    st.pyplot(plt)
 
-# Weather vs Usage
-elif analysis_option == 'Weather vs Usage':
-    st.title('Weather Impact on Bike Usage')
-    weather_df = day_df.groupby('weathersit').agg({'cnt': 'sum'}).reset_index()
-    st.write(weather_df)
+elif analysis_type == "Clustering":
+    st.header("Clustering Pengguna Sepeda")
+    combined_df = pd.merge(hour_df, day_df, on='dteday', suffixes=('_hour', '_day'))
 
-    fig, ax = plt.subplots()
-    sns.barplot(x='weathersit', y='cnt', data=weather_df, ax=ax)
-    ax.set_title('Weather Condition vs Total Bike Usage')
-    ax.set_xlabel('Weather Condition')
-    ax.set_ylabel('Total Usage')
+    def cluster_group(row):
+        if row['season_day'] == 1:
+            return 'Winter_Workday' if row['workingday_day'] == 1 else 'Winter_Holiday'
+        elif row['season_day'] == 2:
+            return 'Spring_Workday' if row['workingday_day'] == 1 else 'Spring_Holiday'
+        elif row['season_day'] == 3:
+            return 'Summer_Workday' if row['workingday_day'] == 1 else 'Summer_Holiday'
+        elif row['season_day'] == 4:
+            return 'Fall_Workday' if row['workingday_day'] == 1 else 'Fall_Holiday'
+
+    combined_df['cluster'] = combined_df.apply(cluster_group, axis=1)
+    cluster_counts = combined_df.groupby('cluster')[['registered_day', 'casual_day']].sum()
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bar_width = 0.35
+    ax.barh(cluster_counts.index, cluster_counts['registered_day'], height=bar_width, label='Registered', color='#1f77b4')
+    ax.barh(cluster_counts.index, cluster_counts['casual_day'], height=bar_width, label='Casual', color='#ff7f0e', left=cluster_counts['registered_day'])
+    ax.set_xlabel('Jumlah Penyewaan', fontsize=14)
+    ax.set_ylabel('Cluster', fontsize=14)
+    ax.set_title('Total Penyewaan Sepeda Berdasarkan Cluster', fontsize=16)
+    ax.legend(title='Tipe Pengguna')
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
     st.pyplot(fig)
-
-    st.markdown("### Weather Filter")
-    weather_option = st.selectbox('Select Weather Condition', weather_df['weathersit'].unique())
-    filtered_weather = weather_df[weather_df['weathersit'] == weather_option]
-    st.write(filtered_weather)
-
-# Time vs Usage
-elif analysis_option == 'Time vs Usage':
-    st.title('Time of Day Impact on Bike Usage')
-    
-    hour_df["hr_group"] = hour_df['hr'].apply(lambda x: "Early Morning" if x < 6 else ("Morning" if x < 11 else ("Afternoon" if x < 15 else ("Evening" if x < 18 else "Night"))))
-    
-    time_df = hour_df.groupby('hr_group').agg({'cnt': 'sum'}).reset_index()
-    
-    st.write(time_df)
-    
-    fig, ax = plt.subplots()
-    sns.barplot(x='hr_group', y='cnt', data=time_df, ax=ax)
-    ax.set_title('Time of Day vs Total Bike Usage')
-    ax.set_xlabel('Time of Day')
-    ax.set_ylabel('Total Usage')
-    st.pyplot(fig)
-
-    st.markdown("### Time Filter")
-    time_option = st.selectbox('Select Time of Day', time_df['hr_group'].unique())
-    filtered_time = time_df[time_df['hr_group'] == time_option]
-    st.write(filtered_time)
 
 # Footer
-st.sidebar.text('Created by: Bagus Angkasawan Sumantri Putra')
+st.sidebar.markdown("Created by Bagus Angkasawan Sumantri Putra")
+
