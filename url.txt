@@ -1,1 +1,1 @@
-https://dashboard-dicoding-data-analysis.streamlit.app/
+https://data-analysis-laskarai.streamlit.app/
