@@ -51,6 +51,7 @@ if analysis_type == "Efek Cuaca":
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Kerja)")
         st.pyplot(plt)
+        st.write("**Insight**: Jumlah penggunaan sepeda lebih tinggi pada hari kerja saat cuaca cerah atau berkabut, dan berkurang saat hujan ringan atau salju ringan.")
     else:
         weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weather"]).cnt.sum().reset_index()
         sns.barplot(x="weather", y="cnt", data=weather_holiday_df, palette="coolwarm")
@@ -58,6 +59,7 @@ if analysis_type == "Efek Cuaca":
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Libur)")
         st.pyplot(plt)
+        st.write("**Insight**: Pada hari libur, jumlah penggunaan sepeda juga lebih tinggi saat cuaca cerah atau berkabut, namun penggunaan sepeda cenderung tetap lebih rendah pada kondisi cuaca buruk.")
 
 elif analysis_type == "Pola Penggunaan":
     st.header("Pola Penggunaan Sepeda")
@@ -73,6 +75,7 @@ elif analysis_type == "Pola Penggunaan":
     plt.ylabel("Jumlah Pengguna")
     plt.title(f"Pola Penggunaan Sepeda pada {weekday}")
     st.pyplot(plt)
+    st.write(f"**Insight**: Pola penggunaan sepeda pada {weekday} menunjukkan puncak penggunaan pada jam sibuk, seperti pagi dan sore hari, yang mungkin bertepatan dengan jam perjalanan kerja atau sekolah.")
 
     st.subheader("Pola Penggunaan Sepanjang Jam")
     usage_by_time_df = hour_df.groupby(["weekday", "hr"]).cnt.sum().unstack()
@@ -84,6 +87,7 @@ elif analysis_type == "Pola Penggunaan":
     plt.title("Pola Penggunaan Sepeda Sepanjang Minggu dan Jam")
     plt.yticks(ticks=[0, 1, 2, 3, 4, 5, 6], labels=["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"], rotation=0)
     st.pyplot(plt)
+    st.write("**Insight**: Peta panas penggunaan sepeda menunjukkan tren penggunaan yang tinggi pada jam-jam tertentu di sepanjang minggu, dengan puncak penggunaan terlihat pada hari kerja saat jam sibuk.")
 
 elif analysis_type == "Clustering":
     st.header("Clustering Pengguna Sepeda")
@@ -112,6 +116,7 @@ elif analysis_type == "Clustering":
     ax.legend(title='Tipe Pengguna')
     ax.grid(axis='x', linestyle='--', alpha=0.7)
     st.pyplot(fig)
+    st.write("**Insight**: Clustering penggunaan sepeda berdasarkan musim dan hari menunjukkan perbedaan signifikan antara jumlah pengguna terdaftar dan pengguna biasa, dengan variasi berdasarkan musim dan hari kerja/libur. Hal ini dapat membantu dalam perencanaan dan pengelolaan sumber daya sepeda.")
 
 # Footer
 st.sidebar.markdown("Created by Bagus Angkasawan Sumantri Putra")
