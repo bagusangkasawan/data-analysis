@@ -26,13 +26,13 @@ hour_df['weather'] = hour_df['weathersit'].map(weather_conditions)
 # Set up Streamlit app
 st.set_page_config(
     page_title="Bike Sharing Analysis Dashboard",
-    page_icon="bikes-sharing.png",
+    page_icon="https://raw.githubusercontent.com/bagusangkasawan/data-analysis/main/dashboard/bikes-sharing.png",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # Display logo
-st.sidebar.image("bikes-sharing.png", use_column_width=True)
+st.sidebar.image("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/main/dashboard/bikes-sharing.png", use_column_width=True)
 
 st.title('Bike Sharing Analysis Dashboard')
 
@@ -115,4 +115,3 @@ elif analysis_type == "Clustering":
 
 # Footer
 st.sidebar.markdown("Created by Bagus Angkasawan Sumantri Putra")
-
