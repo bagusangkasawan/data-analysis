@@ -42,7 +42,7 @@ if len(date_range) == 2:
     start_date, end_date = date_range
     day_df = day_df[(day_df['dteday'] >= pd.to_datetime(start_date)) & (day_df['dteday'] <= pd.to_datetime(end_date))]
     hour_df = hour_df[(hour_df['dteday'] >= pd.to_datetime(start_date)) & (hour_df['dteday'] <= pd.to_datetime(end_date))]
-    
+
 # Sidebar for user input
 analysis_type = st.sidebar.selectbox("Pilih Jenis Analisis", ["Efek Cuaca", "Pola Penggunaan", "Clustering"])
 
@@ -58,7 +58,7 @@ if analysis_type == "Efek Cuaca":
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Kerja)")
         st.pyplot(plt)
-        st.write("**Insight**: Jumlah penggunaan sepeda lebih tinggi pada hari kerja saat cuaca cerah (clear) atau berkabut (mist), dan berkurang saat hujan ringan atau salju ringan.")
+        st.write("**Insight**: Jumlah penggunaan sepeda lebih tinggi pada hari kerja saat cuaca cerah (clear) atau berkabut (mist), dan berkurang saat hujan ringan atau salju ringan (light rain/snow).")
     else:
         weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weather"]).cnt.sum().reset_index()
         sns.barplot(x="weather", y="cnt", data=weather_holiday_df, palette="coolwarm")
@@ -66,7 +66,7 @@ if analysis_type == "Efek Cuaca":
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Libur)")
         st.pyplot(plt)
-        st.write("**Insight**: Pada hari libur, jumlah penggunaan sepeda juga lebih tinggi saat cuaca cerah atau berkabut, namun penggunaan sepeda cenderung tetap lebih rendah pada kondisi cuaca buruk.")
+        st.write("**Insight**: Pada hari libur, jumlah penggunaan sepeda juga lebih tinggi saat cuaca cerah (clear) atau berkabut (mist), namun penggunaan sepeda cenderung tetap lebih rendah pada kondisi cuaca buruk (light rain/snow).")
 
 elif analysis_type == "Pola Penggunaan":
     st.header("Pola Penggunaan Sepeda")
