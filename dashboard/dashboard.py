@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Load Data
-@st.cache
+@st.cache_data
 def load_data():
     day_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/day.csv")
     hour_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-analysis/refs/heads/main/data/hour.csv")
@@ -34,9 +34,14 @@ if analysis_option == 'Overview':
     st.title('Bike Sharing Data Overview')
     st.write('Here is a general overview of the bike sharing data:')
     st.write("### Day Data")
-    st.dataframe(day_df.head())
+    
+    sort_by_day = st.selectbox('Sort Day Data By', day_df.columns.tolist())
+    st.dataframe(day_df.sort_values(by=sort_by_day).head())
+    
     st.write("### Hour Data")
-    st.dataframe(hour_df.head())
+    
+    sort_by_hour = st.selectbox('Sort Hour Data By', hour_df.columns.tolist())
+    st.dataframe(hour_df.sort_values(by=sort_by_hour).head())
 
 # Weather vs Usage
 elif analysis_option == 'Weather vs Usage':
@@ -50,6 +55,11 @@ elif analysis_option == 'Weather vs Usage':
     ax.set_xlabel('Weather Condition')
     ax.set_ylabel('Total Usage')
     st.pyplot(fig)
+
+    st.markdown("### Weather Filter")
+    weather_option = st.selectbox('Select Weather Condition', weather_df['weathersit'].unique())
+    filtered_weather = weather_df[weather_df['weathersit'] == weather_option]
+    st.write(filtered_weather)
 
 # Time vs Usage
 elif analysis_option == 'Time vs Usage':
@@ -67,6 +77,11 @@ elif analysis_option == 'Time vs Usage':
     ax.set_xlabel('Time of Day')
     ax.set_ylabel('Total Usage')
     st.pyplot(fig)
+
+    st.markdown("### Time Filter")
+    time_option = st.selectbox('Select Time of Day', time_df['hr_group'].unique())
+    filtered_time = time_df[time_df['hr_group'] == time_option]
+    st.write(filtered_time)
 
 # Footer
 st.sidebar.text('Created by: Bagus Angkasawan Sumantri Putra')
