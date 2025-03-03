@@ -11,6 +11,7 @@ hour_df = pd.read_csv("https://raw.githubusercontent.com/bagusangkasawan/data-an
 day_df['dteday'] = pd.to_datetime(day_df['dteday'])
 hour_df['dteday'] = pd.to_datetime(hour_df['dteday'])
 hour_df['weekday'] = hour_df['dteday'].dt.dayofweek
+day_df['temp_bin'] = pd.cut(day_df['temp'], bins=[0, 0.2, 0.4, 0.6, 0.8, 1.0], labels=['Very Cold', 'Cold', 'Mild', 'Warm', 'Hot'])
 
 # Define weather condition mappings
 weather_conditions = {
@@ -124,6 +125,16 @@ elif analysis_type == "Clustering":
     ax.grid(axis='x', linestyle='--', alpha=0.7)
     st.pyplot(fig)
     st.write("**Insight**: Clustering penggunaan sepeda berdasarkan musim dan hari menunjukkan perbedaan signifikan antara jumlah pengguna terdaftar dan pengguna biasa, dengan variasi berdasarkan musim dan hari kerja/libur. Hal ini dapat membantu dalam perencanaan dan pengelolaan sumber daya sepeda.")
+
+    st.header("Distribusi Binning Suhu")
+    temp_bin_counts = day_df['temp_bin'].value_counts().sort_index()
+
+    plt.figure(figsize=(10, 6))
+    sns.countplot(x='temp_bin', data=day_df, palette='coolwarm', order=temp_bin_counts.index)
+    plt.title('Distribusi Binning Suhu')
+    plt.xlabel('Kelompok Suhu')
+    plt.ylabel('Jumlah')
+    st.pyplot(plt)
 
 # Footer
 st.sidebar.markdown("Created by Bagus Angkasawan Sumantri Putra")
