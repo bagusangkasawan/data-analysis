@@ -135,6 +135,7 @@ elif analysis_type == "Clustering":
     plt.xlabel('Kelompok Suhu')
     plt.ylabel('Jumlah')
     st.pyplot(plt)
+    st.write("**Insight**: Penggunaan sepeda meningkat pada cuaca sedang (mild) dan hangat (warm), dan menurun pada cuaca sangat dingin (very cold) atau sangat panas (hot).")
 
 # Footer
 st.sidebar.markdown("Created by Bagus Angkasawan Sumantri Putra")
