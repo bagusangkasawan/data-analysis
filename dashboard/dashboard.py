@@ -36,6 +36,13 @@ st.sidebar.image("https://raw.githubusercontent.com/bagusangkasawan/data-analysi
 
 st.title('Bike Sharing Analysis Dashboard')
 
+# Date filter
+date_range = st.sidebar.date_input("Pilih Rentang Tanggal", [day_df['dteday'].min(), day_df['dteday'].max()])
+if len(date_range) == 2:
+    start_date, end_date = date_range
+    day_df = day_df[(day_df['dteday'] >= pd.to_datetime(start_date)) & (day_df['dteday'] <= pd.to_datetime(end_date))]
+    hour_df = hour_df[(hour_df['dteday'] >= pd.to_datetime(start_date)) & (hour_df['dteday'] <= pd.to_datetime(end_date))]
+    
 # Sidebar for user input
 analysis_type = st.sidebar.selectbox("Pilih Jenis Analisis", ["Efek Cuaca", "Pola Penggunaan", "Clustering"])
 
