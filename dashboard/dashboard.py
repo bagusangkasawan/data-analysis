@@ -81,7 +81,7 @@ elif analysis_type == "Pola Penggunaan":
     sns.lineplot(x="hr", y="cnt", data=usage_by_day, palette="viridis")
     plt.xlabel("Jam")
     plt.ylabel("Jumlah Pengguna")
-    plt.title(f"Pola Penggunaan Sepeda pada {weekday}")
+    plt.title(f"Pola Penggunaan Sepeda pada hari {weekday}")
     st.pyplot(plt)
     st.write(f"**Insight**: Pola penggunaan sepeda pada hari {weekday} menunjukkan puncak penggunaan pada jam sibuk, seperti pagi dan sore hari, yang mungkin bertepatan dengan jam perjalanan kerja atau sekolah.")
 
