@@ -75,7 +75,7 @@ elif analysis_type == "Pola Penggunaan":
     plt.ylabel("Jumlah Pengguna")
     plt.title(f"Pola Penggunaan Sepeda pada {weekday}")
     st.pyplot(plt)
-    st.write(f"**Insight**: Pola penggunaan sepeda pada {weekday} menunjukkan puncak penggunaan pada jam sibuk, seperti pagi dan sore hari, yang mungkin bertepatan dengan jam perjalanan kerja atau sekolah.")
+    st.write(f"**Insight**: Pola penggunaan sepeda pada hari {weekday} menunjukkan puncak penggunaan pada jam sibuk, seperti pagi dan sore hari, yang mungkin bertepatan dengan jam perjalanan kerja atau sekolah.")
 
     st.subheader("Pola Penggunaan Sepanjang Jam")
     usage_by_time_df = hour_df.groupby(["weekday", "hr"]).cnt.sum().unstack()
