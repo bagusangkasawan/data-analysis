@@ -45,15 +45,15 @@ if analysis_type == "Efek Cuaca":
     day_type = st.radio("Pilih Hari", ("Hari Kerja", "Hari Libur"))
     
     if day_type == "Hari Kerja":
-        weather_workday_df = day_df[day_df["workingday"] == 1].groupby(["weathersit"]).cnt.sum().reset_index()
-        sns.barplot(x="weather_index", y="users_count", data=weather_workday_df, palette="coolwarm")
+        weather_workday_df = day_df[day_df["workingday"] == 1].groupby(["weather"]).cnt.sum().reset_index()
+        sns.barplot(x="weather", y="cnt", data=weather_workday_df, palette="coolwarm")
         plt.xlabel("Cuaca")
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Kerja)")
         st.pyplot(plt)
     else:
-        weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weathersit"]).cnt.sum().reset_index()
-        sns.barplot(x="weather_index", y="users_count", data=weather_holiday_df, palette="coolwarm")
+        weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weather"]).cnt.sum().reset_index()
+        sns.barplot(x="weather", y="cnt", data=weather_holiday_df, palette="coolwarm")
         plt.xlabel("Cuaca")
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Libur)")
