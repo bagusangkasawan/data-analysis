@@ -12,6 +12,17 @@ day_df['dteday'] = pd.to_datetime(day_df['dteday'])
 hour_df['dteday'] = pd.to_datetime(hour_df['dteday'])
 hour_df['weekday'] = hour_df['dteday'].dt.dayofweek
 
+# Define weather condition mappings
+weather_conditions = {
+    1: "Clear",
+    2: "Mist",
+    3: "Light Rain/Snow",
+    4: "Heavy Rain/Snow"
+}
+
+day_df['weather'] = day_df['weathersit'].map(weather_conditions)
+hour_df['weather'] = hour_df['weathersit'].map(weather_conditions)
+
 # Set up Streamlit app
 st.set_page_config(
     page_title="Bike Sharing Analysis Dashboard",
@@ -19,6 +30,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Display logo
+st.sidebar.image("bikes-sharing.png", use_column_width=True)
 
 st.title('Bike Sharing Analysis Dashboard')
 
@@ -31,15 +45,15 @@ if analysis_type == "Efek Cuaca":
     day_type = st.radio("Pilih Hari", ("Hari Kerja", "Hari Libur"))
     
     if day_type == "Hari Kerja":
-        weather_workday_df = day_df[day_df["workingday"] == 1].groupby(["weathersit"]).cnt.sum().reset_index()
-        sns.barplot(x="weathersit", y="cnt", data=weather_workday_df)
+        weather_workday_df = day_df[day_df["workingday"] == 1].groupby(["weather"]).cnt.sum().reset_index()
+        sns.barplot(x="weather", y="cnt", data=weather_workday_df, palette="coolwarm")
         plt.xlabel("Cuaca")
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Kerja)")
         st.pyplot(plt)
     else:
-        weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weathersit"]).cnt.sum().reset_index()
-        sns.barplot(x="weathersit", y="cnt", data=weather_holiday_df)
+        weather_holiday_df = day_df[day_df["workingday"] == 0].groupby(["weather"]).cnt.sum().reset_index()
+        sns.barplot(x="weather", y="cnt", data=weather_holiday_df, palette="coolwarm")
         plt.xlabel("Cuaca")
         plt.ylabel("Jumlah Pengguna")
         plt.title("Pengaruh Cuaca pada Penggunaan Sepeda (Hari Libur)")
@@ -54,7 +68,7 @@ elif analysis_type == "Pola Penggunaan":
     usage_by_day = hour_df[hour_df["weekday"] == weekday_index].groupby(["hr"]).cnt.sum().reset_index()
 
     plt.figure(figsize=(10, 5))
-    sns.lineplot(x="hr", y="cnt", data=usage_by_day)
+    sns.lineplot(x="hr", y="cnt", data=usage_by_day, palette="viridis")
     plt.xlabel("Jam")
     plt.ylabel("Jumlah Pengguna")
     plt.title(f"Pola Penggunaan Sepeda pada {weekday}")
